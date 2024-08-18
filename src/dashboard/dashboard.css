@@ -1,0 +1,44 @@
+/* dashboard.css */
+#app-container {
+  display: flex;
+}
+
+#sidebar {
+  width: 250px; /* Adjust as needed */
+  background: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-brand {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-item {
+  margin-bottom: 10px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  display: block;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.nav-link.active {
+  background: #007bff;
+  color: #fff;
+}
+
+#main-content {
+  flex: 1;
+  padding: 20px;
+  background: #ffffff;
+}
