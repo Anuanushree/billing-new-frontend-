@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { NavLink, useNavigate, Outlet } from "react-router-dom";
+import "./AdminDashboard.css";
 
 function AdminDashboard() {
   const [profile, setProfile] = useState({ username: "Admin" }); // Example profile state
@@ -13,73 +13,47 @@ function AdminDashboard() {
     navigate("/");
   };
 
-  return (
-    <div>
-      <div id="wrapper">
-        <ul
-          className="navbar-nav bg-gradient bg sidebar sidebar-dark accordion"
-          id="accordionSidebar"
-        >
-          <a className="sidebar-brand d-flex align-items-center justify-content-center">
-            <div className="sidebar-brand-icon rotate-n-15">
-              <br />
-              <br />
-              <a>
-                <i className="fa fa-user icon" aria-hidden="true"></i>
-              </a>
-              <p className="dashboard-user"></p>
-            </div>
-            <div className="sidebar-brand-text mx-3"></div>
-          </a>
-          <br />
-          <br />
-          <li className="nav-item">
-            <NavLink className="nav-link" activeClassName="active" to="/inward">
-              
-              <span>Inward</span>
-            </NavLink>
-          </li>
+  const isActive = (path) => {
+    return window.location.pathname === path ? "active" : "";
+  };
 
-          <hr className="sidebar-divider"></hr>
-          <li className="nav-item">
-            <NavLink
-              className="nav-link"
-              activeClassName="active"
-              to="/CreateUser"
-            >
-           
-              <span>Create user</span>
+  return (
+    <div id="app-container" className="clearfix">
+      <div id="sidebar">
+        <div className="sidebar-brand">
+          <span>Admin Dashboard</span>
+        </div>
+        <ul className="sidebar-nav">
+          <li className={`nav-item ${isActive("/admin/inward")}`}>
+            <NavLink className="nav-link" to="/admin/inward">
+              Inward
             </NavLink>
           </li>
-          <hr className="sidebar-divider"></hr>
-          <li className="nav-item">
-            <NavLink
-              className="nav-link"
-              activeClassName="active"
-              to="/AdminSaleView"
-            >
-              
-              <span>Sale details</span>
+          <li className={`nav-item ${isActive("/admin/CreateUser")}`}>
+            <NavLink className="nav-link" to="/admin/CreateUser">
+              Create User
             </NavLink>
           </li>
-          <hr className="sidebar-divider"></hr>
-          <li className="nav-item">
-            <NavLink
-              className="nav-link"
-              activeClassName="active"
-              to="/AdminInward"
-            >
-              
-              <span>Item Master</span>
+          <li className={`nav-item ${isActive("/admin/AdminSaleView")}`}>
+            <NavLink className="nav-link" to="/admin/AdminSaleView">
+              Sale Details
+            </NavLink>
+          </li>
+          <li className={`nav-item ${isActive("/admin/AdminInward")}`}>
+            <NavLink className="nav-link" to="/admin/AdminInward">
+              Item Master
             </NavLink>
           </li>
           <li className="nav-item">
             <div className="nav-link" onClick={handleLogout}>
-            
-              <span>Logout</span>
+              Logout
             </div>
           </li>
         </ul>
+      </div>
+      <div id="main-content">
+        <Outlet />
+        {/* This is where the nested routes will be rendered */}
       </div>
     </div>
   );

@@ -202,8 +202,7 @@ function ExcelForm({ Base_url }) {
   };
 
   return (
-    <div id="wrapper">
-      <AdminDashboard />
+    <div className="m-2">
       <ToastContainer />
 
       <div className="container-fluid form-container">

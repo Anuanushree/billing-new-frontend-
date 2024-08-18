@@ -1,11 +1,17 @@
 /* dashboard.css */
+
 #app-container {
   display: flex;
+  height: auto;
 }
 
 #sidebar {
-  width: 250px; /* Adjust as needed */
-  background: #f8f9fa;
+  width: 250px;
+  /* height: auto; */
+  height: 200%;
+  /* Adjust as needed */
+  background: #343a40; /* Dark background color for sidebar */
+  color: #fff; /* Text color in sidebar */
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
@@ -13,6 +19,7 @@
 .sidebar-brand {
   font-size: 1.5em;
   margin-bottom: 20px;
+  color: #ffffff; /* Adjust brand text color */
 }
 
 .sidebar-nav {
@@ -26,19 +33,25 @@
 
 .nav-link {
   text-decoration: none;
-  color: #333;
+  color: #adb5bd; /* Light text color */
   display: block;
   padding: 10px;
   border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for hover/active */
+}
+
+.nav-link:hover {
+  background-color: #495057; /* Background color on hover */
+  color: #ffffff; /* Text color on hover */
 }
 
 .nav-link.active {
-  background: #007bff;
-  color: #fff;
+  background-color: #007bff; /* Background color for active link */
+  color: #ffffff; /* Text color for active link */
 }
 
 #main-content {
   flex: 1;
   padding: 20px;
-  background: #ffffff;
+  background: #f8f9fa; /* Light background color for main content */
 }

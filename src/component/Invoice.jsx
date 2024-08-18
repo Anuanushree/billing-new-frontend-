@@ -345,7 +345,7 @@ function Invoice({ Base_url }) {
 
   console.log(data);
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <ToastContainer />
 

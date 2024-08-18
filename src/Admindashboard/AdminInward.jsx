@@ -163,7 +163,7 @@ function AdminInward({ Base_url }) {
   };
   return (
     <div id="wrapper">
-      <AdminDashboard />
+      {/* <AdminDashboard /> */}
       <ToastContainer />
       <div className="table-container">
         <div className="table-body-container">

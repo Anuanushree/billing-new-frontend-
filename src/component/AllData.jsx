@@ -183,7 +183,7 @@ function AllData({ Base_url }) {
   };
 
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <div className="table-container">
         <table className="table table-dark table-bordered border border-primary p-2 m-4">

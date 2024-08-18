@@ -50,7 +50,7 @@ function Calc() {
   };
 
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <Container>
         <Typography variant="h4" gutterBottom>

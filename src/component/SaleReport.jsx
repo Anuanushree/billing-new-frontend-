@@ -209,7 +209,7 @@ function DailySalesReport({ Base_url }) {
   };
 
   return (
-    <div>
+    <div className="m-2">
       {/* <Dashboard /> */}
       <ToastContainer />
       <div className="container-fluid form-container">

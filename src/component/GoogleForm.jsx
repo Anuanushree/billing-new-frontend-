@@ -97,8 +97,8 @@ function GoogleForm({ Base_url }) {
   };
 
   return (
-    <div id="wrapper">
-      <Dashboard />
+    <div className="m-2">
+      {/* <Dashboard /> */}
       <Container>
         <Box marginBottom={2} display="flex" gap={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

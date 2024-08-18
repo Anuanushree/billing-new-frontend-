@@ -443,7 +443,7 @@ function SalesMessage({ Base_url }) {
     setData(filteredData);
   };
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <div style={{ width: "50%" }}>
         <input

@@ -110,7 +110,7 @@ function Adminsale({ Base_url }) {
 
   return (
     <div id="wrapper">
-      <AdminDashboard />
+      {/* <AdminDashboard /> */}
 
       <div style={{ margin: "20px" }}>
         <h1>Sales Data</h1>

@@ -1,4 +1,6 @@
+// src/component/login/SignIn.jsx
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   Modal,
   Box,
@@ -18,7 +20,7 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "90%", // Use percentage width for responsiveness
+  width: "90%",
   maxWidth: 600,
   bgcolor: "background.paper",
   boxShadow: 24,
@@ -62,7 +64,7 @@ export default function SignIn({ open, handleClose }) {
         localStorage.setItem("Admin", Admin.toString());
         localStorage.setItem("userName", username);
 
-        navigate(Admin ? "/inward" : "/exceldata");
+        navigate(Admin ? "/admin/inward" : "/home/exceldata");
         handleClose();
         toast.success("Login successful!");
       } else {
@@ -77,7 +79,7 @@ export default function SignIn({ open, handleClose }) {
   };
 
   return (
-    <div>
+    <>
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
@@ -89,7 +91,6 @@ export default function SignIn({ open, handleClose }) {
         }}
         closeAfterTransition
         slots={{ backdrop: Backdrop }}
-        style={{ backdropFilter: "blur(5px)", border: "none" }}
         slotProps={{
           backdrop: {
             timeout: 500,
@@ -139,9 +140,9 @@ export default function SignIn({ open, handleClose }) {
                 variant="contained"
                 color="primary"
                 sx={{
-                  width: "100%", // Full width for better touch targets
-                  maxWidth: 256, // Max width for larger screens
-                  height: "40px", // Increased height for better touch targets
+                  width: "100%",
+                  maxWidth: 256,
+                  height: "40px",
                   justifyContent: "center",
                 }}
                 onClick={handleSignIn}
@@ -155,6 +156,12 @@ export default function SignIn({ open, handleClose }) {
           </Box>
         </Fade>
       </Modal>
-    </div>
+      <ToastContainer />
+    </>
   );
 }
+
+SignIn.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+};

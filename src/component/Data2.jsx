@@ -183,7 +183,7 @@ function Data2({ Base_url }) {
   console.log(totalSale_value);
 
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
 
       <table className="table table-dark table-bordered border border-primary p-2 m-4">

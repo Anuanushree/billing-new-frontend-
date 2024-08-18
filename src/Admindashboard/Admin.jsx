@@ -157,7 +157,6 @@ function Admin({ Base_url }) {
 
   return (
     <div id="wrapper">
-      <AdminDashboard />
       <Grid container spacing={3} style={{ padding: 24 }}>
         <Grid item xs={12}>
           <Paper style={{ padding: 24 }}>

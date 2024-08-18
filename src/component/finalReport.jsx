@@ -269,7 +269,7 @@ function FinalReport({ Base_url }) {
   };
 
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <ToastContainer />
 

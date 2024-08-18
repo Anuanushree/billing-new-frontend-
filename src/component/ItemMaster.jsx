@@ -212,7 +212,7 @@ function ItemMaster({ Base_url }) {
   };
 
   return (
-    <div id="wrapper">
+    <div className="m-2">
       {/* <Dashboard /> */}
       <ToastContainer />
       <div className="table-container">
