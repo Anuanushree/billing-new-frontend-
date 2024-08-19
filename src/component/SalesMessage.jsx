@@ -14,6 +14,7 @@ import {
   Grid,
 } from "@mui/material";
 import Dashboard from "../dashboard/Dashboard";
+import Cookies from "cookies-js";
 
 function SalesMessage({ Base_url }) {
   const [data, setData] = useState([]);
@@ -23,7 +24,8 @@ function SalesMessage({ Base_url }) {
   const [today, setToday] = useState("");
   const [datas, setDatas] = useState([]);
 
-  const token = localStorage.getItem("token");
+  const token = Cookies.get("token");
+  const storeName = Cookies.get("storeName");
   const headers = {
     headers: { authorization: `${token}` },
   };
@@ -433,6 +435,8 @@ function SalesMessage({ Base_url }) {
   const day = new Date(date).getDate();
 
   const formattedTotals =
+    storeName +
+    "*" +
     day +
     Object.values(totals)
       .map((value) => `*${value}`)

@@ -1,4 +1,3 @@
-// src/component/login/SignIn.jsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -14,6 +13,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import Cookies from "cookies-js";
 
 const style = {
   position: "absolute",
@@ -50,23 +50,23 @@ export default function SignIn({ open, handleClose }) {
         `https://billing-backend-1.onrender.com/user/signin`,
         user
       );
-
-      const { token, id, Admin, username } = response.data;
+      console.log(response.data);
+      const { token, id, Admin, username, storeName } = response.data;
 
       if (token) {
         const currentTime = Date.now();
         const tokenValidityDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
-        const expiresIn = currentTime + tokenValidityDuration;
+        const expiresIn = new Date(currentTime + tokenValidityDuration);
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("expiresIn", expiresIn.toString());
-        localStorage.setItem("id", id);
-        localStorage.setItem("Admin", Admin.toString());
-        localStorage.setItem("userName", username);
+        Cookies.set("token", token, { expires: expiresIn });
+        Cookies.set("id", id, { expires: expiresIn });
+        Cookies.set("Admin", Admin.toString(), { expires: expiresIn });
+        Cookies.set("userName", username, { expires: expiresIn });
+        Cookies.set("storeName", storeName, { expires: expiresIn });
 
         navigate(Admin ? "/admin/inward" : "/home/exceldata");
         handleClose();
-        toast.success("Login successful!");
+        // toast.success("Login successful!");
       } else {
         setError("Login failed. Please check your credentials.");
         toast.error("Login failed. Please check your credentials.");

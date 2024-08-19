@@ -3,6 +3,7 @@ import Dashboard from "../dashboard/Dashboard";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
+import Cookies from "cookies-js";
 
 function AllData({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -13,8 +14,8 @@ function AllData({ Base_url }) {
     exportToExcel(formDetails);
   };
 
-  const id = localStorage.getItem("id");
-  const token = localStorage.getItem("token");
+  const id = Cookies.get("id");
+  const token = Cookies.get("token");
 
   const headers = {
     headers: { authorization: `${token}` },

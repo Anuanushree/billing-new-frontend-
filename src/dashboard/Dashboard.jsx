@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import "./dashboard.css";
+import Cookies from "cookies-js";
 
 function Dashboard({ Base_url }) {
   const navigate = useNavigate();
@@ -8,6 +9,14 @@ function Dashboard({ Base_url }) {
 
   const handleLogout = (event) => {
     event.preventDefault();
+    const allCookies = document.cookie.split(";");
+
+    // Iterate over all cookies and delete them
+    allCookies.forEach((cookie) => {
+      const cookieName = cookie.split("=")[0].trim();
+      Cookies.expire(cookieName);
+    });
+
     localStorage.removeItem("token");
     localStorage.removeItem("id");
     localStorage.clear();
@@ -77,7 +86,7 @@ function Dashboard({ Base_url }) {
           </li>
           <li className={`nav-item ${isActive("/home/bankHistory")}`}>
             <Link className="nav-link" to="/home/bankHistory">
-              Bank history
+              Bank PV
             </Link>
           </li>
           <li className="nav-item">

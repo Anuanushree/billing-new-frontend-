@@ -3,6 +3,7 @@ import Dashboard from "../dashboard/Dashboard";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Cookies from "cookies-js";
 
 function ItemMaster({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -43,8 +44,8 @@ function ItemMaster({ Base_url }) {
     setRangeEdit(range);
   };
 
-  const id = localStorage.getItem("id");
-  const token = localStorage.getItem("token");
+  const id = Cookies.get("id");
+  const token = Cookies.get("token");
 
   const headers = {
     headers: { authorization: `${token}` },

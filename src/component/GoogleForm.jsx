@@ -1,13 +1,6 @@
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  lastDayOfMonth,
-  parseISO,
-} from "date-fns";
+import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import {
   Container,
   TextField,
@@ -19,35 +12,28 @@ import {
   TableRow,
   Paper,
   Box,
+  Button,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import Dashboard from "../dashboard/Dashboard";
+import * as XLSX from "xlsx";
 
 function GoogleForm({ Base_url }) {
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [date, setDate] = useState(new Date());
 
   const token = localStorage.getItem("token");
-  console.log(token);
   const headers = { headers: { authorization: `${token}` } };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${Base_url}/user/bank`, headers);
-        console.log("Raw Data:", response.data); // Debugging
         const rawData = response.data;
-
-        // Transform data into the desired format
         const transformedData = transformData(rawData);
-        console.log("Transformed Data:", transformedData); // Debugging
-
         setTableData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -62,20 +48,11 @@ function GoogleForm({ Base_url }) {
     const month = selectedDate.month();
     const start = startOfMonth(new Date(year, month));
     const end = endOfMonth(new Date(year, month));
-    const previousMonthEnd = subMonths(start, 1);
-
-    // // Debugging: Check the calculated dates
-    // console.log("Start Date:", start);
-    // console.log("End Date:", end);
-    // console.log("Previous Month End Date:", previousMonthEnd);
 
     const filteredByMonth = tableData.filter(
       (item) => new Date(item.Date) >= start && new Date(item.Date) <= end
     );
 
-    console.log("Filtered Data for Month:", filteredByMonth); // Debugging
-
-    // Ensure only the last entry of the previous month is included
     setFilteredData(filteredByMonth);
   }, [tableData, selectedDate]);
 
@@ -96,9 +73,48 @@ function GoogleForm({ Base_url }) {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredData.map((row) => ({
+        Date: row.SaleMessageDate
+          ? format(parseISO(row.SaleMessageDate), "yyyy-MM-dd")
+          : "-",
+        Sales: row.Sale || "-",
+        Date: format(parseISO(row.Date), "yyyy-MM-dd"),
+        "Cash collection": row.Cash || "-",
+        "Swiping Card Amount": row.POS || "-",
+        Total: row.Total || "-",
+      }))
+    );
+
+    const workbook = XLSX.utils.book_new();
+
+    // Setting column widths
+    const colWidths = [
+      { wpx: 120 },
+      { wpx: 80 },
+      { wpx: 120 },
+      { wpx: 150 },
+      { wpx: 150 },
+      { wpx: 80 },
+    ];
+    worksheet["!cols"] = colWidths;
+
+    // Making the header bold
+    const headerRange = XLSX.utils.decode_range(worksheet["!ref"]);
+    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+      const cell = worksheet[XLSX.utils.encode_cell({ r: 0, c: C })];
+      if (cell && cell.v) {
+        cell.s = { font: { bold: true } };
+      }
+    }
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, `Bank PV_${dayjs().format("YYYY-MM-DD")}.xlsx`);
+  };
+
   return (
     <div className="m-2">
-      {/* <Dashboard /> */}
       <Container>
         <Box marginBottom={2} display="flex" gap={2}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -111,17 +127,20 @@ function GoogleForm({ Base_url }) {
               }}
             />
           </LocalizationProvider>
+          <Button variant="contained" color="primary" onClick={exportToExcel}>
+            Export to Excel
+          </Button>
         </Box>
 
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Sale Message Date</TableCell>
-                <TableCell>Sale</TableCell>
                 <TableCell>Date</TableCell>
-                <TableCell>Cash</TableCell>
-                <TableCell>POS</TableCell>
+                <TableCell>Sales</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Cash collection</TableCell>
+                <TableCell>Swiping Card Amount</TableCell>
                 <TableCell>Total</TableCell>
               </TableRow>
             </TableHead>

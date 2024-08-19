@@ -33,25 +33,44 @@ import SalesMessage from "./component/SalesMessage";
 import GoogleForm from "./component/GoogleForm";
 import Body from "./Body";
 import Home from "./Home";
+import Cookies from "cookies-js";
 
 const Base_url = "https://billing-backend-1.onrender.com";
+// const Base_url = "http://localhost:4000";
 
 function App() {
   const [user, setUser] = useState(null);
-  const token = localStorage.getItem("token");
-  const isAdmin = localStorage.getItem("Admin");
+
+  const token = Cookies.get("token");
+  const isAdmin = Cookies.get("Admin");
   const [issubmit, SetIssubmit] = useState(false);
-  const expiresIn = localStorage.getItem("expiresIn");
+  const expiresIn = Cookies.get("expiresIn");
 
   const navigate = useNavigate();
 
   useEffect(() => {
     if (expiresIn && Date.now() > parseInt(expiresIn, 10)) {
+      // Cookies.empty();
       localStorage.clear();
+      const allCookies = document.cookie.split(";");
+
+      // Iterate over all cookies and delete them
+      allCookies.forEach((cookie) => {
+        const cookieName = cookie.split("=")[0].trim();
+        Cookies.expire(cookieName);
+      });
       navigate("/");
     }
     if (!token) {
       localStorage.clear();
+      const allCookies = document.cookie.split(";");
+
+      // Iterate over all cookies and delete them
+      allCookies.forEach((cookie) => {
+        const cookieName = cookie.split("=")[0].trim();
+        Cookies.expire(cookieName);
+      });
+      // Cookies.empty();
       navigate("/");
     }
   }, [token, expiresIn, navigate]);

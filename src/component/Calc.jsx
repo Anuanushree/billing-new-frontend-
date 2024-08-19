@@ -10,6 +10,7 @@ import {
   Container,
 } from "@mui/material";
 import Dashboard from "../dashboard/Dashboard";
+import Cookies from "cookies-js";
 
 function Calc() {
   const amounts = [2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];

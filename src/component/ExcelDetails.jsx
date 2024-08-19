@@ -13,6 +13,7 @@ import {
   Button,
   CircularProgress, // Import CircularProgress
 } from "@mui/material";
+import Cookies from "cookies-js";
 
 function ExcelDetails({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -23,8 +24,8 @@ function ExcelDetails({ Base_url }) {
   const cellRefs = useRef({});
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
-  const id = localStorage.getItem("id");
+  const token = Cookies.get("token");
+  const id = Cookies.get("id");
 
   const headers = {
     headers: { authorization: `${token}` },

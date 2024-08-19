@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
+import Cookies from "cookies-js";
 
 function Invoice({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -11,8 +12,10 @@ function Invoice({ Base_url }) {
   const [data, setdata] = useState([]);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
-  const id = localStorage.getItem("id");
-  const token = localStorage.getItem("token");
+
+
+  const id = Cookies.get("id");
+  const token = Cookies.get("token");
 
   const headers = {
     headers: { authorization: `${token}` },

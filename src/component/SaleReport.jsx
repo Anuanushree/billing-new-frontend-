@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
+import Cookies from "cookies-js";
 
 function DailySalesReport({ Base_url }) {
   const [Pos, setPos] = useState(0);
@@ -16,7 +17,8 @@ function DailySalesReport({ Base_url }) {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [val, setVal] = useState(0);
-  const token = localStorage.getItem("token");
+
+  const token = Cookies.get("token");
 
   const headers = {
     headers: { authorization: `${token}` },

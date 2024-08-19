@@ -3,6 +3,7 @@ import Dashboard from "../dashboard/Dashboard";
 import Sample from "./sample";
 import axios from "axios";
 import "./sample.css";
+import Cookies from "cookies-js";
 
 function Report({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -10,8 +11,8 @@ function Report({ Base_url }) {
   const [datas, setDatas] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  const id = localStorage.getItem("id");
-  const token = localStorage.getItem("token");
+  const id = Cookies.get("id");
+  const token = Cookies.get("token");
 
   const headers = {
     headers: { authorization: `${token}` },

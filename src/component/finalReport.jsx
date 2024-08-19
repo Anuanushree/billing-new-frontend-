@@ -3,13 +3,16 @@ import * as XLSX from "xlsx";
 import Dashboard from "../dashboard/Dashboard";
 import { ToastContainer } from "react-toastify";
 import axios from "axios";
+import Cookies from "cookies-js";
 
 function FinalReport({ Base_url }) {
   const [data, setData] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [formDetails, setFormDetails] = useState([]);
-  const id = localStorage.getItem("id");
-  const token = localStorage.getItem("token");
+
+
+  const id = Cookies.get("id");
+  const token = Cookies.get("token");
   const headers = { headers: { authorization: `${token}` } };
 
   useEffect(() => {
