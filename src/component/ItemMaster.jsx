@@ -143,13 +143,16 @@ function ItemMaster({ Base_url }) {
           const productMatch = d.Product
             ? d.Product.toLowerCase().includes(searchTermLower)
             : false;
+          const RangeMatch = d.Product
+            ? d.Range.toLowerCase().includes(searchTermLower)
+            : false;
           const itemCodeMatch = d.Item_Code
             ? d.Item_Code.toString().includes(searchTermLower)
             : false;
           const mrpMatch = d.MRP_Value
             ? d.MRP_Value.toString().includes(searchTermLower)
             : false;
-          return productMatch || itemCodeMatch || mrpMatch;
+          return productMatch || itemCodeMatch || mrpMatch || RangeMatch;
         })
       : a;
 

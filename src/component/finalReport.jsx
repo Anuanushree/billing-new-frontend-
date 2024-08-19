@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import Dashboard from "../dashboard/Dashboard";
-import { ToastContainer } from "react-toastify";
+import {
+  Button,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Container,
+  Typography,
+} from "@mui/material";
 import axios from "axios";
 import Cookies from "cookies-js";
+import { ToastContainer } from "react-toastify";
 
 function FinalReport({ Base_url }) {
   const [data, setData] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [formDetails, setFormDetails] = useState([]);
-
 
   const id = Cookies.get("id");
   const token = Cookies.get("token");
@@ -25,7 +36,7 @@ function FinalReport({ Base_url }) {
         setFormDetails(response.data);
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          navigate("/"); // Replace with the path to your login page
+          // navigate("/"); // Replace with the path to your login page
         } else {
           console.error("Error fetching data:", error);
         }
@@ -45,7 +56,7 @@ function FinalReport({ Base_url }) {
       setData(response.data);
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        navigate("/"); // Replace with the path to your login page
+        // navigate("/"); // Replace with the path to your login page
       } else {
         console.error("Error fetching data:", error);
       }
@@ -55,7 +66,6 @@ function FinalReport({ Base_url }) {
   const exportToExcels = (data) => {
     const groupedData = {};
 
-    // Group data by 'Product'
     data.forEach((item) => {
       const productName = item.Product || "Unknown Product";
 
@@ -85,7 +95,6 @@ function FinalReport({ Base_url }) {
 
     const dataForExcel = [];
 
-    // Add header content
     dataForExcel.push(["TAMIL NADU STATE MARKETING CORPORATION LIMITED"]);
     dataForExcel.push([
       "B-4, Ambattur Industrial Estate, Chennai (South) District, Chennai - 58.",
@@ -103,7 +112,6 @@ function FinalReport({ Base_url }) {
     let grandTotalBottles = 0;
     let grandTotalValue = 0;
 
-    // Add data for each product
     for (const productName in groupedData) {
       groupedData[productName].data.forEach((item) => {
         dataForExcel.push([
@@ -116,7 +124,6 @@ function FinalReport({ Base_url }) {
         ]);
       });
 
-      // Add product-wise total
       dataForExcel.push([
         `TOTAL ${productName.toUpperCase()}`,
         "",
@@ -126,15 +133,12 @@ function FinalReport({ Base_url }) {
         groupedData[productName].totalValue,
       ]);
 
-      // Update grand totals
       grandTotalBottles += groupedData[productName].totalBottles;
       grandTotalValue += groupedData[productName].totalValue;
 
-      // Add an empty row for separation
       dataForExcel.push([]);
     }
 
-    // Add product-wise totals
     dataForExcel.push(["PRODUCT-WISE TOTALS"]);
     for (const productName in groupedData) {
       dataForExcel.push([
@@ -148,7 +152,6 @@ function FinalReport({ Base_url }) {
     }
     dataForExcel.push([]);
 
-    // Add grand total at the end
     dataForExcel.push([
       "GRAND TOTAL",
       "",
@@ -158,7 +161,6 @@ function FinalReport({ Base_url }) {
       grandTotalValue,
     ]);
 
-    // Add footer
     dataForExcel.push(["", "", "", "", ""]);
     dataForExcel.push([
       "Verification Supervisor Signature",
@@ -168,21 +170,18 @@ function FinalReport({ Base_url }) {
       "Shop Supervisor Signature",
     ]);
 
-    // Create a new workbook and sheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.aoa_to_sheet(dataForExcel);
     worksheet["!cols"] = [
-      { wch: 50 }, // Width of the "Brand name" column
-      { wch: 15 }, // Width of the "Item code" column
-      { wch: 10 }, // Width of the "Size" column
-      { wch: 10 }, // Width of the "MRP" column
-      { wch: 15 }, // Width of the "Total bottle" column
-      { wch: 15 }, // Width of the "Total value" column
+      { wch: 50 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
     ];
-    // Append sheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Details");
 
-    // Save workbook as Excel file
     XLSX.writeFile(workbook, "Daily_Stock_Details.xlsx");
   };
 
@@ -191,10 +190,10 @@ function FinalReport({ Base_url }) {
   };
 
   const renderTableRows = (data) => {
-    // Initialize grouped data object
     const groupedData = {};
+    let grandTotalBottles = 0;
+    let grandTotalValue = 0;
 
-    // Group data by Product
     data.forEach((item) => {
       const productName = item.Product || "Unknown Product";
 
@@ -216,51 +215,56 @@ function FinalReport({ Base_url }) {
 
     const rows = [];
 
-    // Iterate over each product category
     for (const productName in groupedData) {
-      // Rows for individual items under the product category
       groupedData[productName].data.forEach((item, index) => {
         rows.push(
-          <tr key={`${productName}-${index}`}>
-            <td>{index + 1}</td>
-            <td>{item.Description || ""}</td>
-            <td>{item.Item_Code}</td>
-            <td>{item.Size || ""}</td>
-            <td>{item.MRP_Value || ""}</td>
-            <td>{item.Closing_bottle || 0}</td>
-            <td>{item.Closing_value || 0}</td>
-          </tr>
+          <TableRow key={`${productName}-${index}`}>
+            <TableCell>{index + 1}</TableCell>
+            <TableCell>{item.Description || ""}</TableCell>
+            <TableCell>{item.Item_Code}</TableCell>
+            <TableCell>{item.Size || ""}</TableCell>
+            <TableCell>{item.MRP_Value || ""}</TableCell>
+            <TableCell>{item.Closing_bottle || 0}</TableCell>
+            <TableCell>{item.Closing_value || 0}</TableCell>
+          </TableRow>
         );
       });
 
-      // Product-wise total row
       rows.push(
-        <tr key={`${productName}-total`} style={{ fontWeight: "bold" }}>
-          <td colSpan={5}>{`TOTAL ${productName.toUpperCase()}`}</td>
-          <td>{groupedData[productName].totalBottles}</td>
-          <td>{groupedData[productName].totalValue}</td>
-        </tr>
+        <TableRow key={`${productName}-total`} style={{ fontWeight: "bold" }}>
+          <TableCell
+            colSpan={5}
+          >{`TOTAL ${productName.toUpperCase()}`}</TableCell>
+          <TableCell>{groupedData[productName].totalBottles}</TableCell>
+          <TableCell>{groupedData[productName].totalValue}</TableCell>
+        </TableRow>
       );
 
-      // Add a spacer row
+      grandTotalBottles += groupedData[productName].totalBottles;
+      grandTotalValue += groupedData[productName].totalValue;
+
       rows.push(
-        <tr key={`${productName}-spacer`}>
-          <td colSpan={7}></td>
-        </tr>
+        <TableRow key={`${productName}-spacer`}>
+          <TableCell colSpan={7}></TableCell>
+        </TableRow>
       );
     }
 
-    // Grand total row
+    for (const productName in groupedData) {
+      rows.push(
+        <TableRow style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
+          <TableCell colSpan={5}>{`${productName}`}</TableCell>
+          <TableCell>{groupedData[productName].totalBottles}</TableCell>
+          <TableCell>{groupedData[productName].totalValue}</TableCell>
+        </TableRow>
+      );
+    }
     rows.push(
-      <tr key="grand-total" style={{ fontWeight: "bold" }}>
-        <td colSpan={5}>GRAND TOTAL</td>
-        <td>
-          {data.reduce((acc, item) => acc + (item.Closing_bottle || 0), 0)}
-        </td>
-        <td>
-          {data.reduce((acc, item) => acc + (item.Closing_value || 0), 0)}
-        </td>
-      </tr>
+      <TableRow key="grand-total" style={{ fontWeight: "bold" }}>
+        <TableCell colSpan={5}>GRAND TOTAL</TableCell>
+        <TableCell>{grandTotalBottles}</TableCell>
+        <TableCell>{grandTotalValue}</TableCell>
+      </TableRow>
     );
 
     return rows;
@@ -272,40 +276,48 @@ function FinalReport({ Base_url }) {
   };
 
   return (
-    <div className="m-2">
-      {/* <Dashboard /> */}
+    <Container>
       <ToastContainer />
-
-      <div>
-        <div>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-        <div>
-          <button onClick={handleSearch}>Search</button>
-        </div>
-        <button onClick={() => exportToExcels(data)}>Export to Excel</button>
-        <div className="table-container">
-          <table className="table table-dark table-bordered border border-primary p-2 m-4">
-            <thead>
-              <tr>
-                <th>S.no</th>
-                <th>Brand Name</th>
-                <th>Item Code</th>
-                <th>Size</th>
-                <th>New Rate</th>
-                <th>Closing Bottles</th>
-                <th>Closing Values</th>
-              </tr>
-            </thead>
-            <tbody>{renderTableRows(data)}</tbody>
-          </table>
-        </div>
+      <Typography variant="h4" gutterBottom>
+        PV Report
+      </Typography>
+      <div style={{ marginBottom: "16px" }}>
+        <TextField
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          style={{ marginRight: "16px" }}
+        />
+        <Button variant="contained" color="primary" onClick={handleSearch}>
+          Search
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleClick}
+          style={{ marginLeft: "16px" }}
+        >
+          Export to Excel
+        </Button>
       </div>
-    </div>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>S.no</TableCell>
+              <TableCell>Brand Name</TableCell>
+              <TableCell>Item Code</TableCell>
+              <TableCell>Size</TableCell>
+              <TableCell>New Rate</TableCell>
+              <TableCell>Closing Bottles</TableCell>
+              <TableCell>Closing Values</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{renderTableRows(data)}</TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 }
 

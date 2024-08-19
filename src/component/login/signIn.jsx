@@ -73,7 +73,7 @@ export default function SignIn({ open, handleClose }) {
       }
     } catch (error) {
       console.error("Error:", error);
-      setError("An error occurred. Please try again.");
+      setError("An error occurred. Please try again.", error);
       toast.error("An error occurred. Please try again.");
     }
   };
