@@ -20,6 +20,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import * as XLSX from "xlsx";
 import Cookies from "cookies-js";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 function GoogleForm({ Base_url }) {
   const [tableData, setTableData] = useState([]);
@@ -97,85 +99,142 @@ function GoogleForm({ Base_url }) {
       setSelectedDate(date);
     }
   };
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
 
-  const exportToExcel = () => {
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      // Use aoa_to_sheet to manually specify the rows
-      [`Store: ${storeName}`, "", "", "", "", ""], // Store name row
-      [`Date: ${dayjs().format("YYYY-MM-DD")}`, "", "", "", "", ""], // Date row
-      [], // Empty row for spacing
-      [
-        "Date",
-        "Sales",
-        "Date",
-        "Cash collection",
-        "Swiping Card Amount",
-        "Total",
-      ], // Column headers
+    // Define font style
+    const fontStyle = {
+      name: "Times New Roman",
+      size: 10,
+      bold: false,
+      italic: false,
+      underline: false,
+    };
+
+    // Define border style
+    const borderStyle = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+
+    // Define cell alignment
+    const alignment = { vertical: "middle", horizontal: "center" };
+
+    // Helper function to apply font, border, and alignment to cells
+    const applyStyles = (row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.font = fontStyle;
+        cell.border = borderStyle;
+        cell.alignment = alignment;
+      });
+    };
+
+    // Add and merge header rows
+    const headerRow1 = worksheet.addRow([
+      "TAMIL NADU STATE MARKETING CORPORATION LIMITED",
     ]);
+    worksheet.mergeCells(headerRow1.number, 1, headerRow1.number, 6); // Adjust column range as needed
+    headerRow1.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow1.font = { bold: true };
+    applyStyles(headerRow1); // Apply styles to header row
 
-    // Add table data to the worksheet
-    XLSX.utils.sheet_add_json(
-      worksheet,
-      filteredData.map((row) => ({
-        Date: row.SaleMessageDate
+    const headerRow2 = worksheet.addRow([
+      "B-4, Ambattur Industrial Estate, Chennai (South) District, Chennai - 58.",
+    ]);
+    worksheet.mergeCells(headerRow2.number, 1, headerRow2.number, 6); // Adjust column range as needed
+    headerRow2.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow2.font = { bold: true };
+    applyStyles(headerRow2); // Apply styles to header row
+
+    const headerRow3 = worksheet.addRow([
+      `CLOSING STOCK DETAILS AS ON ${dayjs().format(
+        "DD MMMM YYYY"
+      )} SHOP NO ${storeName}`,
+    ]);
+    worksheet.mergeCells(headerRow3.number, 1, headerRow3.number, 6); // Adjust column range as needed
+    headerRow3.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow3.font = { bold: true };
+    applyStyles(headerRow3); // Apply styles to header row
+
+    // Add empty row for spacing
+    worksheet.addRow([]);
+
+    // Add headers
+    const headers = [
+      "Date",
+      "Sales",
+      "Date",
+      "Cash collection",
+      "Swiping Card Amount",
+      "Total",
+    ];
+    const headerRow = worksheet.addRow(headers);
+
+    // Style headers
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { ...fontStyle, bold: true };
+      cell.border = borderStyle;
+      cell.alignment = alignment;
+    });
+
+    // Add table data and center-align
+    filteredData.forEach((row) => {
+      const dataRow = worksheet.addRow([
+        row.SaleMessageDate
           ? format(parseISO(row.SaleMessageDate), "yyyy-MM-dd")
           : "-",
-        Sales: row.Sale || "-",
-        Date: format(parseISO(row.Date), "yyyy-MM-dd"),
-        "Cash collection": row.Cash || "-",
-        "Swiping Card Amount": row.POS || "-",
-        Total: row.Total || "-",
-      })),
-      {
-        header: [
-          "Date",
-          "Sales",
-          "Date",
-          "Cash collection",
-          "Swiping Card Amount",
-          "Total",
-        ],
-        skipHeader: true,
-        origin: -1,
-      }
-    );
+        row.Sale || "-",
+        format(parseISO(row.Date), "yyyy-MM-dd"),
+        row.Cash || "-",
+        row.POS || "-",
+        row.Total || "-",
+      ]);
 
-    // Set column widths
-    const colWidths = [
-      { wpx: 120 },
-      { wpx: 80 },
-      { wpx: 120 },
-      { wpx: 150 },
-      { wpx: 150 },
-      { wpx: 80 },
-    ];
-    worksheet["!cols"] = colWidths;
+      // Apply font style and border to data rows
+      applyStyles(dataRow);
+    });
 
-    // Make the header bold
-    const headerRange = XLSX.utils.decode_range(worksheet["!ref"]);
-    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-      const cell = worksheet[XLSX.utils.encode_cell({ r: 3, c: C })];
-      if (cell && cell.v) {
-        cell.s = { font: { bold: true } };
-      }
-    }
-
-    // Add totals to the worksheet
-    const totalRow = [
+    // Add overall totals row
+    const totalRow = worksheet.addRow([
       "Overall Total",
       overallTotals.sale,
       "",
       overallTotals.cash,
       overallTotals.pos,
       overallTotals.total,
+    ]);
+
+    // Style totals row
+    totalRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { ...fontStyle, bold: true };
+      cell.border = borderStyle;
+      cell.alignment = alignment;
+    });
+
+    // Set column widths to ensure content fits well and adds visual spacing
+    worksheet.columns = [
+      { width: 20 }, // Date (Previous Date)
+      { width: 18 }, // Sales (Previous Sale)
+      { width: 20 }, // Date (Current Date)
+      { width: 22 }, // Cash collection
+      { width: 25 }, // Swiping Card Amount
+      { width: 18 }, // Total
     ];
 
-    XLSX.utils.sheet_add_aoa(worksheet, [totalRow], { origin: -1 });
+    // Adjust row heights for better spacing
+    worksheet.eachRow({ includeEmpty: true }, (row) => {
+      row.height = 20; // Adjust height as needed
+    });
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, `Bank PV_${dayjs().format("YYYY-MM-DD")}.xlsx`);
+    // Generate the Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `Bank PV_${dayjs().format("YYYY-MM-DD")}.xlsx`);
   };
 
   return (

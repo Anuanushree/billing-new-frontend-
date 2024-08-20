@@ -3,7 +3,9 @@ import Dashboard from "../dashboard/Dashboard";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
+import { saveAs } from "file-saver";
 import Cookies from "cookies-js";
+import ExcelJS from "exceljs";
 
 function AllData({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -119,7 +121,7 @@ function AllData({ Base_url }) {
     return `${day}/${month}/${year}`;
   };
 
-  function exportToExcel(data) {
+  async function exportToExcel(data, storeName) {
     const cleanedData = data.map((item) => {
       const { _id, __v, updatedAt, ...rest } = item;
       const parsedDate = new Date(rest.Date);
@@ -154,28 +156,153 @@ function AllData({ Base_url }) {
       };
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(cleanedData);
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Stock Details");
 
-    // Set column widths
-    worksheet["!cols"] = [
-      { wch: 10 }, // Width of the "Date" column
-      { wch: 10 }, // Width of the "Range" column
-      { wch: 20 }, // Width of the "Product" column
-      { wch: 30 }, // Width of the "Brand name" column
-      // Add widths for other columns as needed
+    // Define font style, border style, and alignment
+    const fontStyle = {
+      name: "Times New Roman",
+      size: 10,
+    };
+
+    const borderStyle = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+
+    const alignment = { vertical: "middle", horizontal: "center" };
+
+    const applyStyles = (row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.font = fontStyle;
+        cell.border = borderStyle;
+        cell.alignment = alignment;
+      });
+    };
+
+    // Header rows (for example purposes, add your specific headers)
+    const headerRow1 = worksheet.addRow([
+      "TAMIL NADU STATE MARKETING CORPORATION LIMITED",
+    ]);
+    worksheet.mergeCells(headerRow1.number, 1, headerRow1.number, 19); // Adjust according to the number of columns
+    headerRow1.font = { bold: true };
+    applyStyles(headerRow1);
+
+    const headerRow2 = worksheet.addRow([
+      "B-4, Ambattur Industrial Estate, Chennai (South) District, Chennai - 58.",
+    ]);
+    worksheet.mergeCells(headerRow2.number, 1, headerRow2.number, 19);
+    headerRow2.font = { bold: true };
+    applyStyles(headerRow2);
+
+    const headerRow3 = worksheet.addRow([
+      `CLOSING STOCK DETAILS AS ON ${new Date().toLocaleDateString()} SHOP NO ${storeName}`,
+    ]);
+    worksheet.mergeCells(headerRow3.number, 1, headerRow3.number, 19);
+    headerRow3.font = { bold: true };
+    applyStyles(headerRow3);
+
+    worksheet.addRow([]); // Empty row for spacing
+
+    // Define headers
+    const headers = [
+      "Date",
+      "Range",
+      "Product",
+      "Brand name",
+      "Item code",
+      "Size",
+      "MRP",
+      "Opening Bottle",
+      "Opening value",
+      "Receipt Bottle",
+      "Receipt value",
+      "Total value",
+      "Total Bottle",
+      "Case",
+      "Loose",
+      "Closing bottle",
+      "Sales Bottle",
+      "Sales Value",
+      "Closing value",
+      "Item type",
     ];
 
-    // Apply bold style to headers if they exist
-    const boldCellStyle = { font: { bold: true } };
-    ["A1", "B1", "C1", "D1"].forEach((cellAddress) => {
-      if (worksheet[cellAddress]) {
-        worksheet[cellAddress].s = boldCellStyle;
-      }
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { ...fontStyle, bold: true };
+      cell.border = borderStyle;
+      cell.alignment = alignment;
     });
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, `Daily statement ${date}.xlsx`);
+    // Add cleaned data
+    cleanedData.forEach((item) => {
+      const row = worksheet.addRow([
+        item.Date,
+        item.Range,
+        item.Product,
+        item["Brand name"],
+        item["Item code"],
+        item.Size,
+        item.MRP,
+        item["Opening Bottle"],
+        item["Opening value"],
+        item["Receipt Bottle"],
+        item["Receipt value"],
+        item["Total value"],
+        item["Total Bottle"],
+        item.Case,
+        item.Loose,
+        item["Closing bottle"],
+        item["Sales Bottle"],
+        item["Sales Value"],
+        item["Closing value"],
+        item["Item type"],
+      ]);
+      applyStyles(row);
+    });
+
+    // Set column widths
+    worksheet.columns = [
+      { width: 15 }, // Date
+      { width: 15 }, // Range
+      { width: 20 }, // Product
+      { width: 25 }, // Brand name
+      { width: 15 }, // Item code
+      { width: 10 }, // Size
+      { width: 10 }, // MRP
+      { width: 18 }, // Opening Bottle
+      { width: 18 }, // Opening value
+      { width: 18 }, // Receipt Bottle
+      { width: 18 }, // Receipt value
+      { width: 18 }, // Total value
+      { width: 18 }, // Total Bottle
+      { width: 15 }, // Case
+      { width: 15 }, // Loose
+      { width: 18 }, // Closing bottle
+      { width: 18 }, // Sales Bottle
+      { width: 18 }, // Sales Value
+      { width: 18 }, // Closing value
+      { width: 20 }, // Item type
+    ];
+
+    // Adjust row heights for better spacing
+    worksheet.eachRow({ includeEmpty: true }, (row) => {
+      row.height = 20; // Adjust height as needed
+    });
+
+    // Generate the Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(
+      blob,
+      `Stock_Details_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
   }
 
   const handleAllDate = () => {

@@ -4,7 +4,9 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import Cookies from "cookies-js";
+import ExcelJS from "exceljs";
 
 function Invoice({ Base_url }) {
   const [formDetails, setFormDetails] = useState([]);
@@ -13,10 +15,9 @@ function Invoice({ Base_url }) {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
-
   const id = Cookies.get("id");
   const token = Cookies.get("token");
-
+  const storeName = Cookies.get("storeName");
   const headers = {
     headers: { authorization: `${token}` },
   };
@@ -108,20 +109,56 @@ function Invoice({ Base_url }) {
       console.warn("Both fromDate and toDate must be specified.");
     }
   };
-
   const exportToExcel = () => {
     // Define border style
     const borderStyle = {
-      border: {
-        top: { style: "thick" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      },
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
     };
 
-    console.log(formDetails);
-    // Data mapping
+    // Define font and alignment styles
+    const fontStyle = { bold: true };
+    const alignment = { horizontal: "center", vertical: "middle" };
+
+    // Function to apply styles to a cell
+    const styleCell = (cell) => {
+      cell.font = fontStyle;
+      cell.border = borderStyle;
+      cell.alignment = alignment;
+    };
+
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Invoice Data");
+
+    // Add and merge header rows
+    const headerRow1 = worksheet.addRow([
+      "TAMIL NADU STATE MARKETING CORPORATION LIMITED",
+    ]);
+    worksheet.mergeCells(headerRow1.number, 1, headerRow1.number, 19);
+    headerRow1.font = fontStyle;
+    headerRow1.alignment = alignment;
+    worksheet.getRow(headerRow1.number).height = 30; // Increase row height
+
+    const headerRow2 = worksheet.addRow([
+      "B-4, Ambattur Industrial Estate, Chennai (South) District, Chennai - 58.",
+    ]);
+    worksheet.mergeCells(headerRow2.number, 1, headerRow2.number, 19);
+    headerRow2.font = fontStyle;
+    headerRow2.alignment = alignment;
+    worksheet.getRow(headerRow2.number).height = 30; // Increase row height
+
+    const headerRow3 = worksheet.addRow([
+      `CLOSING STOCK DETAILS AS ON ${new Date().toLocaleDateString()} SHOP NO ${storeName}`,
+    ]);
+    worksheet.mergeCells(headerRow3.number, 1, headerRow3.number, 19);
+    headerRow3.font = fontStyle;
+    headerRow3.alignment = alignment;
+    worksheet.getRow(headerRow3.number).height = 30; // Increase row height
+
+    // Define data and grand totals calculation
     const data = formDetails.map((item, i) => [
       i + 1,
       formatDate(item.Date),
@@ -129,25 +166,22 @@ function Invoice({ Base_url }) {
       item.IMFS_case,
       item.Beer_Case,
       item.Total_Case,
-      item.IMFS_sie && (item.IMFS_sie["1000"] ? item.IMFS_sie["1000"] : 0),
-      item.IMFS_sie && (item.IMFS_sie["750"] ? item.IMFS_sie["750"] : 0),
-      item.IMFS_sie && (item.IMFS_sie["375"] ? item.IMFS_sie["375"] : 0),
-      item.IMFS_sie && (item.IMFS_sie["180"] ? item.IMFS_sie["180"] : 0),
+      item.IMFS_sie?.["1000"] || 0,
+      item.IMFS_sie?.["750"] || 0,
+      item.IMFS_sie?.["375"] || 0,
+      item.IMFS_sie?.["180"] || 0,
       item.IMFS_total_bottle,
       item.IMFS_total_value,
-      item.Beer_size && (item.Beer_size["650"] ? item.Beer_size["650"] : 0),
-      item.Beer_size && (item.Beer_size["500"] ? item.Beer_size["500"] : 0),
-      item.Beer_size && (item.Beer_size["325"] ? item.Beer_size["325"] : 0),
+      item.Beer_size?.["650"] || 0,
+      item.Beer_size?.["500"] || 0,
+      item.Beer_size?.["325"] || 0,
       item.Beer_total_bottle,
       item.Beer_total_value,
       item.Total_Bottle,
       item.Total_amount,
     ]);
 
-    // Calculate grand totals
     const grandTotals = calculateGrandTotals();
-
-    // Push grand totals as the last row of data
     data.push([
       "Grand Total",
       "",
@@ -170,127 +204,79 @@ function Invoice({ Base_url }) {
       grandTotals.Total_amount,
     ]);
 
-    // Create worksheet
-    const ws = XLSX.utils.aoa_to_sheet([
-      [
-        {
-          v: "S.no",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        {
-          v: "Invoice Date",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        {
-          v: "STOCK TRANSFER IN CASES",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        "",
-        "",
-        "",
-        {
-          v: "STOCK TRANSFER IN BOTTLES (IMFL)",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        "",
-        "",
-        "",
-        "",
-        "",
-        {
-          v: "STOCK TRANSFER IN BOTTLES (BEER)",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        "",
-        "",
-        "",
-        "",
-        {
-          v: "Total Bottles",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-        {
-          v: "Total Amount",
-          s: {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } },
-            border: borderStyle,
-          },
-        },
-      ],
-      [
-        "",
-        "",
-        "Invoice No",
-        "IMFL Cases",
-        "BEER Cases",
-        "Total Cases",
-        "1000",
-        "750",
-        "375",
-        "180",
-        "Total",
-        "Amount",
-        "650",
-        "500",
-        "325",
-        "Total",
-        "Amount",
-        // Placeholder for any additional columns  // Placeholder for any additional columns
-      ],
-      ...data,
+    // Add headers for the table
+    worksheet.addRow([
+      "S.no",
+      "Invoice Date",
+      "STOCK TRANSFER IN CASES",
+      "",
+      "",
+      "",
+      "STOCK TRANSFER IN BOTTLES (IMFL)",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "STOCK TRANSFER IN BOTTLES (BEER)",
+      "",
+      "",
+      "",
+      "",
+      "Total Bottles",
+      "Total Amount",
     ]);
 
-    // Merge header cells
-    ws["!merges"] = [
-      { s: { r: 0, c: 2 }, e: { r: 0, c: 5 } }, // Merge "STOCK TRANSFER IN CASES"
-      { s: { r: 0, c: 6 }, e: { r: 0, c: 11 } }, // Merge "STOCK TRANSFER IN BOTTLES (IMFL)"
-      { s: { r: 0, c: 12 }, e: { r: 0, c: 16 } }, // Merge "STOCK TRANSFER IN BOTTLES (BEER)"
-      { s: { r: 0, c: 17 }, e: { r: 0, c: 17 } }, // Merge "Total Bottles"
-      { s: { r: 0, c: 18 }, e: { r: 0, c: 18 } }, // Merge "Total Amount"
-    ];
+    worksheet.addRow([
+      "",
+      "",
+      "Invoice No",
+      "IMFL Cases",
+      "BEER Cases",
+      "Total Cases",
+      "1000",
+      "750",
+      "375",
+      "180",
+      "Total",
+      "Amount",
+      "650",
+      "500",
+      "325",
+      "Total",
+      "Amount",
+    ]);
 
-    // Apply borders to all cells
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let row = range.s.r; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!ws[cellAddress]) ws[cellAddress] = {};
-        ws[cellAddress].s = { ...borderStyle };
-      }
-    }
+    // Add data rows
+    data.forEach((row) => worksheet.addRow(row));
 
-    // Create workbook and append worksheet
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Invoice Data");
+    // Apply styles and borders to all cells
+    worksheet.eachRow({ includeEmpty: true }, (row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        styleCell(cell);
+      });
+    });
 
-    // Write file
-    XLSX.writeFile(wb, "invoice_data.xlsx");
+    // Increase row height for the table rows
+    worksheet.eachRow({ includeEmpty: true }, (row) => {
+      row.height = 25; // Increase row height
+    });
+
+    // Define cell merges
+    worksheet.mergeCells(4, 3, 4, 6); // Merge "STOCK TRANSFER IN CASES"
+    worksheet.mergeCells(4, 7, 4, 12); // Merge "STOCK TRANSFER IN BOTTLES (IMFL)"
+    worksheet.mergeCells(4, 13, 4, 17); // Merge "STOCK TRANSFER IN BOTTLES (BEER)"
+
+    // Create workbook and write file
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, "invoice_data.xlsx");
+    });
   };
+
+  // Function to apply styles to a row
 
   const calculateGrandTotals = () => {
     // Initialize totals object

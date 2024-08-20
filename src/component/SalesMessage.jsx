@@ -19,6 +19,7 @@ import Cookies from "cookies-js";
 function SalesMessage({ Base_url }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [backupBank, setBackupBank] = useState([]);
   const [totals, setTotals] = useState({});
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [today, setToday] = useState("");
@@ -76,6 +77,7 @@ function SalesMessage({ Base_url }) {
     const getBankData = async () => {
       try {
         const response = await axios.get(`${Base_url}/user/bank`, headers);
+        setBackupBank(response.data);
         const filteredData = response.data.filter(
           (d) => d.Date.substring(0, 10) === date
         );
@@ -444,7 +446,12 @@ function SalesMessage({ Base_url }) {
 
   const handleSearch = () => {
     const filteredData = datas.filter((d) => d.Date.substring(0, 10) === date);
+    const filteredData1 = backupBank.filter(
+      (d) => d.Date.substring(0, 10) === date
+    );
+
     setData(filteredData);
+    setFilteredData(filteredData1);
   };
   return (
     <div className="m-2">

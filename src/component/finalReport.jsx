@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import Cookies from "cookies-js";
 import { ToastContainer } from "react-toastify";
+import ExcelJS from "exceljs";
 
 function FinalReport({ Base_url }) {
   const [data, setData] = useState([]);
@@ -24,6 +25,7 @@ function FinalReport({ Base_url }) {
 
   const id = Cookies.get("id");
   const token = Cookies.get("token");
+  const storeName = Cookies.get("storeName");
   const headers = { headers: { authorization: `${token}` } };
 
   useEffect(() => {
@@ -66,6 +68,8 @@ function FinalReport({ Base_url }) {
   const exportToExcels = (data) => {
     const groupedData = {};
 
+    const storeName = Cookies.get("storeName") || "Unknown Store";
+
     data.forEach((item) => {
       const productName = item.Product || "Unknown Product";
 
@@ -93,14 +97,32 @@ function FinalReport({ Base_url }) {
       groupedData[productName].totalValue += totalValue;
     });
 
-    const dataForExcel = [];
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Stock Details");
 
-    dataForExcel.push(["TAMIL NADU STATE MARKETING CORPORATION LIMITED"]);
-    dataForExcel.push([
+    // Add and merge header rows
+    const headerRow1 = worksheet.addRow([
+      "TAMIL NADU STATE MARKETING CORPORATION LIMITED",
+    ]);
+    worksheet.mergeCells(headerRow1.number, 1, headerRow1.number, 6); // Adjust column range as needed
+    headerRow1.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow1.font = { bold: true };
+
+    const headerRow2 = worksheet.addRow([
       "B-4, Ambattur Industrial Estate, Chennai (South) District, Chennai - 58.",
     ]);
-    dataForExcel.push(["CLOSING STOCK DETAILS AS ON 30 JUNE 2021 SHOP NO 928"]);
-    dataForExcel.push([
+    worksheet.mergeCells(headerRow2.number, 1, headerRow2.number, 6); // Adjust column range as needed
+    headerRow2.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow2.font = { bold: true };
+
+    const headerRow3 = worksheet.addRow([
+      `CLOSING STOCK DETAILS AS ON ${date} 2021 SHOP NO ${storeName}`,
+    ]);
+    worksheet.mergeCells(headerRow3.number, 1, headerRow3.number, 6); // Adjust column range as needed
+    headerRow3.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow3.font = { bold: true };
+    // Add table header with center alignment
+    const headerRow = worksheet.addRow([
       "Brand Name",
       "Item Code",
       "Size",
@@ -108,13 +130,20 @@ function FinalReport({ Base_url }) {
       "Closing Bottles",
       "Closing Values",
     ]);
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.font = { bold: true };
+    });
 
     let grandTotalBottles = 0;
     let grandTotalValue = 0;
 
+    // Set row heights
+    const rowHeight = 30; // Adjust height as needed
+
     for (const productName in groupedData) {
       groupedData[productName].data.forEach((item) => {
-        dataForExcel.push([
+        const row = worksheet.addRow([
           item["Brand Name"],
           item["Item Code"],
           item.Size,
@@ -122,9 +151,10 @@ function FinalReport({ Base_url }) {
           item["Closing Bottles"],
           item["Closing Values"],
         ]);
+        row.height = rowHeight;
       });
 
-      dataForExcel.push([
+      const totalRow = worksheet.addRow([
         `TOTAL ${productName.toUpperCase()}`,
         "",
         "",
@@ -132,59 +162,83 @@ function FinalReport({ Base_url }) {
         groupedData[productName].totalBottles,
         groupedData[productName].totalValue,
       ]);
+      totalRow.font = { bold: true };
+      totalRow.height = rowHeight;
 
       grandTotalBottles += groupedData[productName].totalBottles;
       grandTotalValue += groupedData[productName].totalValue;
 
-      dataForExcel.push([]);
+      worksheet.addRow([]).height = rowHeight;
     }
 
-    dataForExcel.push(["PRODUCT-WISE TOTALS"]);
+    const productWiseTotalsRow = worksheet.addRow(["PRODUCT-WISE TOTALS"]);
+    productWiseTotalsRow.font = { bold: true };
+    productWiseTotalsRow.height = rowHeight;
+
     for (const productName in groupedData) {
-      dataForExcel.push([
+      worksheet.addRow([
         productName.toUpperCase(),
         "",
         "",
         "",
         groupedData[productName].totalBottles,
         groupedData[productName].totalValue,
-      ]);
+      ]).height = rowHeight;
     }
-    dataForExcel.push([]);
+    worksheet.addRow([]).height = rowHeight;
 
-    dataForExcel.push([
+    worksheet.addRow([
       "GRAND TOTAL",
       "",
       "",
       "",
       grandTotalBottles,
       grandTotalValue,
-    ]);
+    ]).font = { bold: true }.height = rowHeight;
 
-    dataForExcel.push(["", "", "", "", ""]);
-    dataForExcel.push([
+    worksheet.addRow(["", "", "", "", ""]).height = rowHeight;
+    worksheet.addRow([
       "Verification Supervisor Signature",
       "",
       "",
       "",
       "Shop Supervisor Signature",
-    ]);
+    ]).height = rowHeight;
 
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.aoa_to_sheet(dataForExcel);
-    worksheet["!cols"] = [
-      { wch: 50 },
-      { wch: 15 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 15 },
-      { wch: 15 },
+    // Apply border to the table
+    worksheet.eachRow((row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+    });
+
+    // Set column widths
+    worksheet.columns = [
+      { width: 30 }, // Adjust column widths as needed
+      { width: 20 },
+      { width: 15 },
+      { width: 15 },
+      { width: 20 },
+      { width: 20 },
     ];
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Details");
 
-    XLSX.writeFile(workbook, "Daily_Stock_Details.xlsx");
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Daily_Stock_Details.xlsx";
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
   };
-
   const handleClick = () => {
     exportToExcels(data);
   };
